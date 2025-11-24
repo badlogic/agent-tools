@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import puppeteer from "puppeteer-core";
 import { Readability } from "@mozilla/readability";
@@ -29,7 +29,7 @@ const b = await Promise.race([
 		browserURL: "http://localhost:9222",
 		defaultViewport: null,
 	}),
-	new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 5000)),
+	new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000)),
 ]).catch((e) => {
 	console.error("✗ Could not connect to browser:", e.message);
 	console.error("  Run: browser-start.js");
@@ -45,7 +45,7 @@ if (!p) {
 await Promise.race([
 	p.goto(url, { waitUntil: "networkidle2" }),
 	new Promise((r) => setTimeout(r, 10000)),
-]).catch(() => {});
+]).catch(() => { });
 
 // Get HTML via CDP (works even with TrustedScriptURL restrictions)
 const client = await p.createCDPSession();

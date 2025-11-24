@@ -1,45 +1,91 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
-import { spawn, execSync } from "node:child_process";
+import { $ } from "bun";
 import puppeteer from "puppeteer-core";
+import os from "node:os";
+import path from "node:path";
+import fs from "node:fs";
 
 const useProfile = process.argv[2] === "--profile";
 
 if (process.argv[2] && process.argv[2] !== "--profile") {
-	console.log("Usage: start.ts [--profile]");
+	console.log("Usage: browser-start.js [--profile]");
 	console.log("\nOptions:");
 	console.log("  --profile  Copy your default Chrome profile (cookies, logins)");
 	console.log("\nExamples:");
-	console.log("  start.ts            # Start with fresh profile");
-	console.log("  start.ts --profile  # Start with your Chrome profile");
+	console.log("  browser-start.js            # Start with fresh profile");
+	console.log("  browser-start.js --profile  # Start with your Chrome profile");
 	process.exit(1);
 }
 
+const isWindows = process.platform === "win32";
+
 // Kill existing Chrome
 try {
-	execSync("killall 'Google Chrome'", { stdio: "ignore" });
+	if (isWindows) {
+		await $`taskkill /IM chrome.exe /F`.nothrow().quiet();
+	} else {
+		await $`killall 'Google Chrome'`.nothrow().quiet();
+	}
 } catch {}
 
 // Wait a bit for processes to fully die
 await new Promise((r) => setTimeout(r, 1000));
 
 // Setup profile directory
-execSync("mkdir -p ~/.cache/scraping", { stdio: "ignore" });
+const homeDir = os.homedir();
+const cacheDir = path.join(homeDir, ".cache", "scraping");
+await $`mkdir -p ${cacheDir}`.quiet();
 
 if (useProfile) {
-	// Sync profile with rsync (much faster on subsequent runs)
-	execSync(
-		'rsync -a --delete "/Users/badlogic/Library/Application Support/Google/Chrome/" ~/.cache/scraping/',
-		{ stdio: "pipe" },
-	);
+	if (isWindows) {
+		console.warn("⚠️  Profile syncing is not yet supported on Windows (requires rsync). Starting with fresh profile.");
+	} else {
+		// Sync profile with rsync (much faster on subsequent runs)
+		try {
+			await $`rsync -a --delete "${homeDir}/Library/Application Support/Google/Chrome/" ${cacheDir}/`;
+		} catch (e) {
+			console.error("✗ Failed to sync profile:", e);
+		}
+	}
 }
 
-// Start Chrome in background (detached so Node can exit)
-spawn(
-	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-	["--remote-debugging-port=9222", `--user-data-dir=${process.env["HOME"]}/.cache/scraping`],
-	{ detached: true, stdio: "ignore" },
-).unref();
+// Determine Chrome path
+let chromePath = "";
+if (isWindows) {
+	const possiblePaths = [
+		"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+		"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+		path.join(process.env.LOCALAPPDATA || "", "Google\\Chrome\\Application\\chrome.exe"),
+	];
+	for (const p of possiblePaths) {
+		if (fs.existsSync(p)) {
+			chromePath = p;
+			break;
+		}
+	}
+} else {
+	chromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+}
+
+if (!chromePath) {
+	console.error("✗ Could not find Google Chrome installation");
+	process.exit(1);
+}
+
+// Start Chrome in background
+const userDataDir = cacheDir;
+const args = [
+	"--remote-debugging-port=9222",
+	`--user-data-dir=${userDataDir}`,
+];
+
+// Spawn Chrome detached
+const subprocess = Bun.spawn([chromePath, ...args], {
+	detached: true,
+	stdio: ["ignore", "ignore", "ignore"],
+});
+subprocess.unref();
 
 // Wait for Chrome to be ready by attempting to connect
 let connected = false;
@@ -62,4 +108,4 @@ if (!connected) {
 	process.exit(1);
 }
 
-console.log(`✓ Chrome started on :9222${useProfile ? " with your profile" : ""}`);
+console.log(`✓ Chrome started on :9222${useProfile && !isWindows ? " with your profile" : ""}`);

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import puppeteer from "puppeteer-core";
 
@@ -31,7 +31,7 @@ if (!p) {
 }
 
 const result = await p.evaluate((c) => {
-	const AsyncFunction = (async () => {}).constructor;
+	const AsyncFunction = (async () => { }).constructor;
 	return new AsyncFunction(`return (${c})`)();
 }, code);
 
