@@ -18,7 +18,7 @@ if (process.argv[2] && process.argv[2] !== "--profile") {
 	process.exit(1);
 }
 
-const isWindows = process.platform === "win32" && process.env.BUN;
+const isWindows = process.platform === "win32";
 
 // Kill existing Chrome
 try {
