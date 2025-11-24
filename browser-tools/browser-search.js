@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import puppeteer from "puppeteer-core";
 import { Readability } from "@mozilla/readability";
@@ -181,7 +181,7 @@ if (fetchContent) {
 		try {
 			await Promise.race([
 				p.goto(result.link, { waitUntil: "networkidle2" }),
-				new Promise((r) => setTimeout(r, 10000)),
+				new Promise((r) => setTimeout(r, 5000)),
 			]).catch(() => { });
 
 			const html = await getHtmlViaCDP(p);
