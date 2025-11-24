@@ -18,7 +18,7 @@ if (process.argv[2] && process.argv[2] !== "--profile") {
 	process.exit(1);
 }
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === "win32" && process.env.BUN;
 
 // Kill existing Chrome
 try {
@@ -27,7 +27,7 @@ try {
 	} else {
 		await $`killall 'Google Chrome'`.nothrow().quiet();
 	}
-} catch {}
+} catch { }
 
 // Wait a bit for processes to fully die
 await new Promise((r) => setTimeout(r, 1000));
