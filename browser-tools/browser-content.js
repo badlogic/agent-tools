@@ -44,8 +44,8 @@ if (!p) {
 
 await Promise.race([
 	p.goto(url, { waitUntil: "networkidle2" }),
-	new Promise((r) => setTimeout(r, 10000)),
-]).catch(() => {});
+	new Promise((r) => setTimeout(r, 5000)),
+]).catch(() => { });
 
 // Get HTML via CDP (works even with TrustedScriptURL restrictions)
 const client = await p.createCDPSession();

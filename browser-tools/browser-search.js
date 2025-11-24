@@ -87,7 +87,7 @@ let start = 0;
 while (results.length < numResults) {
 	const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&start=${start}`;
 	await p.goto(searchUrl, { waitUntil: "domcontentloaded" });
-	await p.waitForSelector("div.MjjYud", { timeout: 5000 }).catch(() => {});
+	await p.waitForSelector("div.MjjYud", { timeout: 5000 }).catch(() => { });
 
 	const pageResults = await extractResults();
 	if (pageResults.length === 0) break; // No more results
@@ -181,8 +181,8 @@ if (fetchContent) {
 		try {
 			await Promise.race([
 				p.goto(result.link, { waitUntil: "networkidle2" }),
-				new Promise((r) => setTimeout(r, 10000)),
-			]).catch(() => {});
+				new Promise((r) => setTimeout(r, 5000)),
+			]).catch(() => { });
 
 			const html = await getHtmlViaCDP(p);
 			const url = p.url();
