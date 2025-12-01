@@ -6,17 +6,18 @@ import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import TurndownService from "turndown";
 import { gfm } from "turndown-plugin-gfm";
-import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getChromePath, getChromeProfilePath } from "./platform.js";
+import { syncDirectory } from "./sync.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 puppeteer.use(StealthPlugin());
 
 // Profile paths
-const CHROME_PROFILE = path.join(process.env.HOME, "Library/Application Support/Google/Chrome");
+const CHROME_PROFILE = getChromeProfilePath();
 const CACHE_PROFILE = path.join(__dirname, ".headless-profile");
 
 const TIMEOUT = 30000;
@@ -50,34 +51,44 @@ const profileExists = fs.existsSync(CACHE_PROFILE);
 if (!profileExists || forceSync) {
 	console.error("Syncing Chrome profile...");
 	try {
-		execSync(`rsync -a --delete \
-			--exclude='SingletonLock' \
-			--exclude='SingletonSocket' \
-			--exclude='SingletonCookie' \
-			--exclude='*.lock' \
-			--exclude='lockfile' \
-			--exclude='Lock' \
-			--exclude='BrowserMetrics*' \
-			--exclude='Crashpad' \
-			--exclude='Cache' \
-			--exclude='Code Cache' \
-			--exclude='GPUCache' \
-			--exclude='GrShaderCache' \
-			--exclude='ShaderCache' \
-			--exclude='Service Worker' \
-			--exclude='*.tmp' \
-			"${CHROME_PROFILE}/" "${CACHE_PROFILE}/"`, 
-			{ stdio: "pipe" }
-		);
+		if (!CHROME_PROFILE || !fs.existsSync(CHROME_PROFILE)) {
+			throw new Error("Chrome profile not found");
+		}
+
+		const excludePatterns = [
+			"SingletonLock",
+			"SingletonSocket",
+			"SingletonCookie",
+			".lock",
+			"lockfile",
+			"Lock",
+			"BrowserMetrics",
+			"Crashpad",
+			"Cache",
+			"Code Cache",
+			"GPUCache",
+			"GrShaderCache",
+			"ShaderCache",
+			"Service Worker",
+			".tmp",
+		];
+
+		await syncDirectory(CHROME_PROFILE, CACHE_PROFILE, { exclude: excludePatterns });
 		console.error("Profile synced.");
 	} catch (e) {
 		console.error("Warning: Could not sync profile:", e.message);
 	}
 }
 
+const chromePath = getChromePath();
+if (!chromePath) {
+	console.error("✗ Chrome not found. Please install Google Chrome.");
+	process.exit(1);
+}
+
 const browser = await puppeteer.launch({
 	headless: "new",
-	executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+	executablePath: chromePath,
 	userDataDir: CACHE_PROFILE,
 	args: [
 		"--no-sandbox",
