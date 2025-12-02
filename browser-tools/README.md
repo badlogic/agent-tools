@@ -8,9 +8,9 @@ Chrome DevTools Protocol tools for agent-assisted web automation. These tools co
 
 ✓ CORRECT:
 ```bash
-browser-start.js
-browser-nav.js https://example.com
-browser-pick.js "Click the button"
+./browser-start.js
+./browser-nav.js https://example.com
+./browser-pick.js "Click the button"
 ```
 
 ✗ INCORRECT:
@@ -22,8 +22,8 @@ node browser-start.js        # Don't use 'node' prefix
 ## Start Chrome
 
 ```bash
-browser-start.js              # Fresh profile
-browser-start.js --profile    # Copy user's profile (cookies, logins)
+./browser-start.js              # Fresh profile
+./browser-start.js --profile    # Copy user's profile (cookies, logins)
 ```
 
 Launch Chrome with remote debugging on `:9222`. Use `--profile` to preserve user's authentication state.
@@ -31,8 +31,8 @@ Launch Chrome with remote debugging on `:9222`. Use `--profile` to preserve user
 ## Navigate
 
 ```bash
-browser-nav.js https://example.com
-browser-nav.js https://example.com --new
+./browser-nav.js https://example.com
+./browser-nav.js https://example.com --new
 ```
 
 Navigate to URLs. Use `--new` flag to open in a new tab instead of reusing current tab.
@@ -40,8 +40,8 @@ Navigate to URLs. Use `--new` flag to open in a new tab instead of reusing curre
 ## Evaluate JavaScript
 
 ```bash
-browser-eval.js 'document.title'
-browser-eval.js 'document.querySelectorAll("a").length'
+./browser-eval.js 'document.title'
+./browser-eval.js 'document.querySelectorAll("a").length'
 ```
 
 Execute JavaScript in the active tab. Code runs in async context. Use this to extract data, inspect page state, or perform DOM operations programmatically.
@@ -49,7 +49,7 @@ Execute JavaScript in the active tab. Code runs in async context. Use this to ex
 ## Screenshot
 
 ```bash
-browser-screenshot.js
+./browser-screenshot.js
 ```
 
 Capture current viewport and return temporary file path. Use this to visually inspect page state or verify UI changes.
@@ -57,7 +57,7 @@ Capture current viewport and return temporary file path. Use this to visually in
 ## Pick Elements
 
 ```bash
-browser-pick.js "Click the submit button"
+./browser-pick.js "Click the submit button"
 ```
 
 **IMPORTANT**: Use this tool when the user wants to select specific DOM elements on the page. This launches an interactive picker that lets the user click elements to select them. The user can select multiple elements (Cmd/Ctrl+Click) and press Enter when done. The tool returns CSS selectors for the selected elements.
@@ -70,7 +70,7 @@ Common use cases:
 ## Cookies
 
 ```bash
-browser-cookies.js
+./browser-cookies.js
 ```
 
 Display all cookies for the current tab including domain, path, httpOnly, and secure flags. Use this to debug authentication issues or inspect session state.
@@ -78,7 +78,7 @@ Display all cookies for the current tab including domain, path, httpOnly, and se
 ## Extract Page Content
 
 ```bash
-browser-content.js https://example.com
+./browser-content.js https://example.com
 ```
 
 Navigate to a URL and extract readable content as markdown. Uses Mozilla Readability for article extraction and Turndown for HTML-to-markdown conversion. Works on pages with JavaScript content (waits for page to load).
