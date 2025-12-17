@@ -55,6 +55,8 @@ spawn(
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 	[
 		"--remote-debugging-port=9222",
+		// Security: only allow local connections.
+		"--remote-debugging-address=127.0.0.1",
 		`--user-data-dir=${SCRAPING_DIR}`,
 		"--no-first-run",
 		"--no-default-browser-check",
