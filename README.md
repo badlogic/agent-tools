@@ -1,3 +1,5 @@
+# **NOTE**: this is now superseded by https://github.com/badlogic/pi-skills
+
 # Agent Tools
 
 ## Setup
